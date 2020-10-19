@@ -503,7 +503,9 @@ module Sidekiq
     def remove_job
       Sidekiq.redis do |conn|
         results = conn.multi {
-          conn.zrangebyscore(parent.name, score, score)
+          # Don't let us fetch more than a few hundred elements from Redis as it could cause a bad incident
+          # if the number of elements was massively large
+          conn.zrangebyscore(parent.name, score, score, limit: [0, 500])
           conn.zremrangebyscore(parent.name, score, score)
         }.first
 
@@ -608,7 +610,9 @@ module Sidekiq
         end
 
       elements = Sidekiq.redis { |conn|
-        conn.zrangebyscore(name, begin_score, end_score, with_scores: true)
+        # Don't let us fetch more than a few hundred elements from Redis as it could cause a bad incident
+        # if the number of elements was massively large
+        conn.zrangebyscore(name, begin_score, end_score, with_scores: true, limit: [0, 500])
       }
 
       elements.each_with_object([]) do |element, result|
