@@ -273,7 +273,7 @@ module Sidekiq
     def clear
       Sidekiq.redis do |conn|
         conn.multi do
-          conn.unlink(@rname)
+          conn.del(@rname)
           conn.srem("queues", name)
         end
       end
@@ -562,7 +562,7 @@ module Sidekiq
 
     def clear
       Sidekiq.redis do |conn|
-        conn.unlink(name)
+        conn.del(name)
       end
     end
     alias_method :💣, :clear

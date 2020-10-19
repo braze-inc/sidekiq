@@ -84,7 +84,7 @@ module Sidekiq
       Sidekiq.redis do |conn|
         conn.pipelined do
           conn.srem("processes", identity)
-          conn.unlink("#{identity}:workers")
+          conn.del("#{identity}:workers")
         end
       end
     rescue
@@ -145,7 +145,7 @@ module Sidekiq
             conn.incrby("stat:failed:#{nowdate}", fails)
             conn.expire("stat:failed:#{nowdate}", STATS_TTL)
 
-            conn.unlink(workers_key)
+            conn.del(workers_key)
             curstate.each_pair do |tid, hash|
               conn.hset(workers_key, tid, Sidekiq.dump_json(hash))
             end
