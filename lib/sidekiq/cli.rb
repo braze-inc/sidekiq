@@ -60,8 +60,8 @@ module Sidekiq
       # touch the connection pool so it is created before we
       # fire startup and start multithreading.
       info = Sidekiq.redis_info
-      ver = info["redis_version"]
-      raise "You are connecting to Redis v#{ver}, Sidekiq requires Redis v4.0.0 or greater" if ver < "4"
+      # ver = info["redis_version"]
+      # raise "You are connecting to Redis v#{ver}, Sidekiq requires Redis v4.0.0 or greater" if ver < "4"
 
       maxmemory_policy = info["maxmemory_policy"]
       if maxmemory_policy != "noeviction"
