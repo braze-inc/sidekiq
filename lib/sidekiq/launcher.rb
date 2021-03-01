@@ -132,7 +132,7 @@ module Sidekiq
         procd = Processor::PROCESSED.reset
         curstate = Processor::WORKER_STATE.dup
 
-        workers_key = "#{key}:workers"
+        # workers_key = "#{key}:workers"
         nowdate = Time.now.utc.strftime("%Y-%m-%d")
 
         Sidekiq.redis do |conn|
@@ -145,11 +145,17 @@ module Sidekiq
             conn.incrby("stat:failed:#{nowdate}", fails)
             conn.expire("stat:failed:#{nowdate}", STATS_TTL)
 
-            conn.del(workers_key)
-            curstate.each_pair do |tid, hash|
-              conn.hset(workers_key, tid, Sidekiq.dump_json(hash))
-            end
-            conn.expire(workers_key, 60)
+            # BRAZE MODIFICATION
+            # Commenting out this line since we don't care about worker state,
+            # we have thousands of workers, jobs process quickly, and this only
+            # runs every few minutes. This is just extra ops/sec and extra bandwidth
+            # that is unnecessary at scale.
+            #
+            # conn.del(workers_key)
+            # curstate.each_pair do |tid, hash|
+            #   conn.hset(workers_key, tid, Sidekiq.dump_json(hash))
+            # end
+            # conn.expire(workers_key, 60)
           end
         end
 
