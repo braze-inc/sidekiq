@@ -311,6 +311,10 @@ module Sidekiq
           opts[:concurrency] = Integer(arg)
         end
 
+        o.on "-i", "--index INT", "index for reliable fetch" do |arg|
+          opts[:index] = Integer(arg)
+        end
+
         o.on "-d", "--daemon", "Daemonize process" do |arg|
           puts "ERROR: Daemonization mode was removed in Sidekiq 6.0, please use a proper process supervisor to start and manage your services"
         end
