@@ -116,6 +116,7 @@ module Sidekiq
         logger.info "Shutting down"
         launcher.stop
         logger.info "Bye!"
+        remove_pidfile
 
         # Explicitly exit so busy Processor threads won't block process shutdown.
         #
