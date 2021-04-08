@@ -32,6 +32,14 @@ describe Sidekiq::CLI do
           end
         end
 
+        describe 'pidfile' do
+          it 'accepts with -P' do
+            subject.parse(%w[sidekiq -P /tmp/sidekiq.pid -r ./test/fake_env.rb])
+
+            assert_equal '/tmp/sidekiq.pid', Sidekiq.options[:pidfile]
+          end
+        end
+
         describe 'concurrency' do
           it 'accepts with -c' do
             subject.parse(%w[sidekiq -c 60 -r ./test/fake_env.rb])

@@ -61,6 +61,7 @@ module Sidekiq
       strategy.bulk_requeue([], @options)
 
       clear_heartbeat
+      remove_pidfile
     end
 
     def stopping?

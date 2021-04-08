@@ -34,6 +34,7 @@ module Sidekiq
     # global process state irreversibly.  PRs which improve the
     # test coverage of Sidekiq::CLI are welcomed.
     def run(boot_app: true)
+      write_pid
       boot_application if boot_app
 
       if environment == "development" && $stdout.tty? && Sidekiq.log_formatter.is_a?(Sidekiq::Logger::Formatters::Pretty)
@@ -353,7 +354,7 @@ module Sidekiq
         end
 
         o.on "-P", "--pidfile PATH", "path to pidfile" do |arg|
-          puts "ERROR: PID file creation was removed in Sidekiq 6.0, please use a proper process supervisor to start and manage your services"
+          opts[:pidfile] = arg
         end
 
         o.on "-V", "--version", "Print version and exit" do |arg|
@@ -373,6 +374,21 @@ module Sidekiq
 
     def initialize_logger
       Sidekiq.logger.level = ::Logger::DEBUG if options[:verbose]
+    end
+
+    def write_pid
+      if path = options[:pidfile]
+        pidfile = File.expand_path(path)
+        File.open(pidfile, 'w') do |f|
+          f.puts ::Process.pid
+        end
+      end
+    end
+
+    def remove_pidfile
+      if path = options[:pidfile]
+        FileUtils.rm_f(path)
+      end
     end
 
     def parse_config(path)
