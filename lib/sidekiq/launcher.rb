@@ -84,7 +84,7 @@ module Sidekiq
       Sidekiq.redis do |conn|
         conn.pipelined do
           conn.srem("processes", identity)
-          conn.del("#{identity}:workers")
+          conn.unlink("#{identity}:workers")
         end
       end
     rescue
@@ -151,7 +151,7 @@ module Sidekiq
             # runs every few minutes. This is just extra ops/sec and extra bandwidth
             # that is unnecessary at scale.
             #
-            # conn.del(workers_key)
+            # conn.unlink(workers_key)
             # curstate.each_pair do |tid, hash|
             #   conn.hset(workers_key, tid, Sidekiq.dump_json(hash))
             # end
