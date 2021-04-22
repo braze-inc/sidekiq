@@ -1,5 +1,5 @@
 GIT
-  remote: https://github.com/resque/redis-namespace.git
+  remote: git://github.com/resque/redis-namespace.git
   revision: 6f1bb31bbddd2efc9e16c53759d986b29206a12e
   branch: master
   specs:
@@ -200,3 +200,6 @@ DEPENDENCIES
   sqlite3
   standard
   toxiproxy
+
+BUNDLED WITH
+   2.0.1
