@@ -9,10 +9,18 @@ Gem::Specification.new do |gem|
   gem.license = "LGPL-3.0"
 
   gem.executables = ["sidekiq", "sidekiqmon"]
-  gem.files = `git ls-files | grep -Ev '^(test|myapp|examples)'`.split("\n")
+  gem.files = ["sidekiq.gemspec", "README.md", "Changes.md", "LICENSE"] + `git ls-files | grep -E '^(bin|lib|web)'`.split("\n")
   gem.name = "sidekiq"
   gem.version = Sidekiq::VERSION
   gem.required_ruby_version = ">= 2.5.0"
+
+  gem.metadata = {
+    "homepage_uri" => "https://sidekiq.org",
+    "bug_tracker_uri" => "https://github.com/mperham/sidekiq/issues",
+    "documentation_uri" => "https://github.com/mperham/sidekiq/wiki",
+    "changelog_uri" => "https://github.com/mperham/sidekiq/blob/master/Changes.md",
+    "source_code_uri" => "https://github.com/mperham/sidekiq"
+  }
 
   gem.add_dependency "redis", ">= 4.2.0"
   gem.add_dependency "connection_pool", ">= 2.2.2"

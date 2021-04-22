@@ -127,6 +127,10 @@ header.row .pagination {
   width: 14%;
 }
 @media (max-width: 767px) and (min-width: 200px) {
+  .summary_bar {
+    font-size: 1.5em;
+  }
+
   .summary_bar ul li {
     width: 100%;
   }
@@ -186,7 +190,7 @@ form .btn {
 }
 
 form .btn-group .btn {
-  margin-right: 1px;
+  margin-right: 4px;
 }
 
 td form {
@@ -438,7 +442,7 @@ img.smallogo {
     margin: 5px 10px 5px 5px;
   }
   .stat p{
-    font-size: 1em;
+    font-size: 1.5em;
     margin: 5px 5px 5px 10px;
   }
 }
@@ -1153,10 +1157,9 @@ div.interval-slider input {
   width: 20%;
 }
 
-.circled {
-  border-color: #333;
-  color: #eee;
-  background-color: #b1003e;
+.info-circle {
+  color: #f3f3f3;
+  background-color: #dddddd;
   border-radius: 50%;
   text-align: center;
   vertical-align: middle;

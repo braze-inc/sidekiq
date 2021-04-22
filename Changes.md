@@ -2,6 +2,48 @@
 
 [Sidekiq Changes](https://github.com/mperham/sidekiq/blob/master/Changes.md) | [Sidekiq Pro Changes](https://github.com/mperham/sidekiq/blob/master/Pro-Changes.md) | [Sidekiq Enterprise Changes](https://github.com/mperham/sidekiq/blob/master/Ent-Changes.md)
 
+6.2.1
+---------
+
+- Update RTT warning logic to handle transient RTT spikes [#4851]
+- Fix very low priority CVE on unescaped queue name [#4852]
+- Add note about sessions and Rails apps in API mode
+
+6.2.0
+---------
+
+- Store Redis RTT and log if poor [#4824]
+- Add process/thread stats to Busy page [#4806]
+- Improve Web UI on mobile devices [#4840]
+- **Refactor Web UI session usage** [#4804]
+  Numerous people have hit "Forbidden" errors and struggled with Sidekiq's
+  Web UI session requirement. If you have code in your initializer for
+  Web sessions, it's quite possible it will need to be removed. Here's
+  an overview:
+```
+Sidekiq::Web needs a valid Rack session for CSRF protection. If this is a Rails app,
+make sure you mount Sidekiq::Web *inside* your routes in `config/routes.rb` so
+Sidekiq can reuse the Rails session:
+
+  Rails.application.routes.draw do
+    mount Sidekiq::Web => "/sidekiq"
+    ....
+  end
+
+If this is a bare Rack app, use a session middleware before Sidekiq::Web:
+
+  # first, use IRB to create a shared secret key for sessions and commit it
+  require 'securerandom'; File.open(".session.key", "w") {|f| f.write(SecureRandom.hex(32)) }
+
+  # now, update your Rack app to include the secret with a session cookie middleware
+  use Rack::Session::Cookie, secret: File.read(".session.key"), same_site: true, max_age: 86400
+  run Sidekiq::Web
+
+If this is a Rails app in API mode, you need to enable sessions.
+
+  https://guides.rubyonrails.org/api_app.html#using-session-middlewares
+```
+
 6.1.3
 ---------
 

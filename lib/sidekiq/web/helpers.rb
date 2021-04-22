@@ -22,6 +22,14 @@ module Sidekiq
       end
     end
 
+    def singularize(str, count)
+      if count == 1 && str.respond_to?(:singularize) # rails
+        str.singularize
+      else
+        str
+      end
+    end
+
     def clear_caches
       @strings = nil
       @locale_files = nil
@@ -158,8 +166,7 @@ module Sidekiq
 
     def redis_connection
       Sidekiq.redis do |conn|
-        c = conn.connection
-        "redis://#{c[:location]}/#{c[:db]}"
+        conn.connection[:id]
       end
     end
 
@@ -259,12 +266,14 @@ module Sidekiq
     end
 
     def format_memory(rss_kb)
-      return "" if rss_kb.nil? || rss_kb == 0
+      return "0" if rss_kb.nil? || rss_kb == 0
 
       if rss_kb < 100_000
         "#{number_with_delimiter(rss_kb)} KB"
-      else
+      elsif rss_kb < 10_000_000
         "#{number_with_delimiter((rss_kb / 1024.0).to_i)} MB"
+      else
+        "#{number_with_delimiter((rss_kb / (1024.0 * 1024.0)).round(1))} GB"
       end
     end
 

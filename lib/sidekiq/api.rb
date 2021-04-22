@@ -265,7 +265,7 @@ module Sidekiq
     # Find the job with the given JID within this queue.
     #
     # This is a slow, inefficient operation.  Do not use under
-    # normal conditions.  Sidekiq Pro contains a faster version.
+    # normal conditions.
     def find_job(jid)
       detect { |j| j.jid == jid }
     end
@@ -795,12 +795,12 @@ module Sidekiq
         # you'll be happier this way
         conn.pipelined do
           procs.each do |key|
-            conn.hmget(key, "info", "busy", "beat", "quiet", "rss")
+            conn.hmget(key, "info", "busy", "beat", "quiet", "rss", "rtt_us")
           end
         end
       }
 
-      result.each do |info, busy, at_s, quiet, rss|
+      result.each do |info, busy, at_s, quiet, rss, rtt|
         # If a process is stopped between when we query Redis for `procs` and
         # when we query for `result`, we will have an item in `result` that is
         # composed of `nil` values.
@@ -810,7 +810,8 @@ module Sidekiq
         yield Process.new(hash.merge("busy" => busy.to_i,
                                      "beat" => at_s.to_f,
                                      "quiet" => quiet,
-                                     "rss" => rss))
+                                     "rss" => rss.to_i,
+                                     "rtt_us" => rtt.to_i))
       end
     end
 
@@ -821,6 +822,18 @@ module Sidekiq
     def size
       Sidekiq.redis { |conn| conn.scard("processes") }
     end
+
+    # Total number of threads available to execute jobs.
+    # For Sidekiq Enterprise customers this number (in production) must be
+    # less than or equal to your licensed concurrency.
+    def total_concurrency
+      sum { |x| x["concurrency"] }
+    end
+
+    def total_rss_in_kb
+      sum { |x| x["rss"] || 0 }
+    end
+    alias_method :total_rss, :total_rss_in_kb
 
     # Returns the identity of the current cluster leader or "" if no leader.
     # This is a Sidekiq Enterprise feature, will always return "" in Sidekiq
@@ -901,8 +914,8 @@ module Sidekiq
   end
 
   ##
-  # A worker is a thread that is currently processing a job.
-  # Programmatic access to the current active worker set.
+  # The WorkSet is stores the work being done by this Sidekiq cluster.
+  # It tracks the process and thread working on each job.
   #
   # WARNING WARNING WARNING
   #
@@ -910,17 +923,17 @@ module Sidekiq
   # If you call #size => 5 and then expect #each to be
   # called 5 times, you're going to have a bad time.
   #
-  #    workers = Sidekiq::Workers.new
-  #    workers.size => 2
-  #    workers.each do |process_id, thread_id, work|
+  #    works = Sidekiq::WorkSet.new
+  #    works.size => 2
+  #    works.each do |process_id, thread_id, work|
   #      # process_id is a unique identifier per Sidekiq process
   #      # thread_id is a unique identifier per thread
   #      # work is a Hash which looks like:
-  #      # { 'queue' => name, 'run_at' => timestamp, 'payload' => msg }
+  #      # { 'queue' => name, 'run_at' => timestamp, 'payload' => job_hash }
   #      # run_at is an epoch Integer.
   #    end
   #
-  class Workers
+  class WorkSet
     include Enumerable
 
     def each(&block)
@@ -967,4 +980,8 @@ module Sidekiq
       end
     end
   end
+  # Since "worker" is a nebulous term, we've deprecated the use of this class name.
+  # Is "worker" a process, a type of job, a thread? Undefined!
+  # WorkSet better describes the data.
+  Workers = WorkSet
 end

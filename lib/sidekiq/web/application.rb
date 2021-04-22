@@ -4,7 +4,6 @@ module Sidekiq
   class WebApplication
     extend WebRouter
 
-    CONTENT_LENGTH = "Content-Length"
     REDIS_KEYS = %w[redis_version uptime_in_days connected_clients used_memory_human used_memory_peak_human]
     CSP_HEADER = [
       "default-src 'self' https: http:",
@@ -42,6 +41,13 @@ module Sidekiq
       # nothing, backwards compatibility
     end
 
+    head "/" do
+      # HEAD / is the cheapest heartbeat possible,
+      # it hits Redis to ensure connectivity
+      Sidekiq.redis { |c| c.llen("queue:default") }
+      ""
+    end
+
     get "/" do
       @redis_info = redis_info.select { |k, v| REDIS_KEYS.include? k }
       stats_history = Sidekiq::Stats::History.new((params["days"] || 30).to_i)
@@ -76,10 +82,12 @@ module Sidekiq
       erb(:queues)
     end
 
+    QUEUE_NAME = /\A[a-z_:.\-0-9]+\z/i
+
     get "/queues/:name" do
       @name = route_params[:name]
 
-      halt(404) unless @name
+      halt(404) if !@name || @name !~ QUEUE_NAME
 
       @count = (params["count"] || 25).to_i
       @queue = Sidekiq::Queue.new(@name)
