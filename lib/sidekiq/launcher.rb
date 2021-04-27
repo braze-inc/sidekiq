@@ -159,7 +159,10 @@ module Sidekiq
           end
         end
 
-        rtt = check_rtt
+        # BRAZE MODIFICATION
+        # We don't care about Sidekiq checking our RTT, it adds unnecessary PING commands which somehow
+        # are slower than any other command.
+        # rtt = check_rtt
 
         fails = procd = 0
         kb = memory_usage(::Process.pid)
@@ -171,7 +174,7 @@ module Sidekiq
             conn.hmset(key, "info", to_json,
               "busy", curstate.size,
               "beat", Time.now.to_f,
-              "rtt_us", rtt,
+              "rtt_us", 0,
               "quiet", @done,
               "rss", kb)
             conn.expire(key, 60)
