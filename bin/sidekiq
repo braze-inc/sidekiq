@@ -36,6 +36,9 @@ rescue => e
     STDERR.puts e.backtrace.join("\n")
   else
     cli.handle_exception e
+
+    warn e.message
+    warn e.backtrace.join("\n")
   end
 
   exit 1
