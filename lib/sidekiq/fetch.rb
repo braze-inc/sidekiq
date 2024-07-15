@@ -31,7 +31,7 @@ module Sidekiq
       @queues = @options[:queues].map { |q| "queue:#{q}" }
       if @strictly_ordered_queues
         @queues.uniq!
-        @queues << TIMEOUT
+        @queues << {timeout: TIMEOUT}
       end
     end
 
@@ -59,9 +59,9 @@ module Sidekiq
       end
 
       Sidekiq.redis do |conn|
-        conn.pipelined do
+        conn.pipelined do |pipeline|
           jobs_to_requeue.each do |queue, jobs|
-            conn.rpush(queue, jobs)
+            pipeline.rpush(queue, jobs)
           end
         end
       end
@@ -80,7 +80,7 @@ module Sidekiq
         @queues
       else
         queues = @queues.shuffle!.uniq
-        queues << TIMEOUT
+        queues << {timeout: TIMEOUT}
         queues
       end
     end
