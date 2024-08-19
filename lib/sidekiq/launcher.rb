@@ -175,7 +175,7 @@ module Sidekiq
               "busy", curstate.size,
               "beat", Time.now.to_f,
               "rtt_us", 0,
-              "quiet", @done,
+              "quiet", @done.to_s,
               "rss", kb)
             transaction.expire(key, 60)
             transaction.rpop("#{key}-signals")
