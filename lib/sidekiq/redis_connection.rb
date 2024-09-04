@@ -15,7 +15,7 @@ module Sidekiq
         end
 
         size = if symbolized_options[:size]
-          symbolized_options[:size]
+          symbolized_options.delete(:size)
         elsif Sidekiq.server?
           # Give ourselves plenty of connections.  pool is lazy
           # so we won't create them until we need them.
@@ -28,7 +28,8 @@ module Sidekiq
 
         verify_sizing(size, Sidekiq.options[:concurrency]) if Sidekiq.server?
 
-        pool_timeout = symbolized_options[:pool_timeout] || 1
+        pool_timeout = symbolized_options.delete(:pool_timeout) || 1
+
         log_info(symbolized_options)
 
         # BRAZE MODIFIED CODE
