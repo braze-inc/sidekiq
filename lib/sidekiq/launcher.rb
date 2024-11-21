@@ -190,7 +190,11 @@ module Sidekiq
         ::Process.kill(msg, ::Process.pid)
       rescue => e
         # ignore all redis/network issues
-        logger.error("heartbeat: #{e}")
+
+        # BRAZE MODIFICATION
+        # logger.error("heartbeat: #{e}")
+        logger.info("[sidekiq] heartbeat error: #{e}")
+
         # don't lose the counts if there was a network issue
         Processor::PROCESSED.incr(procd)
         Processor::FAILURE.incr(fails)
